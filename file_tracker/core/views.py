@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from .models import user_entry
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
+import pika
 
 @csrf_exempt
 def create(request):
@@ -16,6 +17,12 @@ def create(request):
         return JsonResponse({'status': 'file already opened'})
 
     user_entry(user_id=user_id, file_id=file_id, ip=ip, port=port).save()
+    connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+
+    channel.exchange_declare(exchange=str(file_id), exchange_type='fanout')
+    connection.close()
     return JsonResponse({'status': 'success'})
 
 @csrf_exempt
