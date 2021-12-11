@@ -34,7 +34,10 @@ def open(request):
     file_id = request.GET.get('file_id')
     print(file_id)
     try:
-        max_id = user_entry.objects.filter(file_id=file_id).order_by('-id')[0].id
+        all_objects = user_entry.objects.filter(file_id=file_id)
+        if len(all_objects) == 0:
+            return JsonResponse({'status': 'this file is not opened'})
+        max_id = all_objects.order_by('-id')[0].id
         random_id = random.randint(1, max_id + 1)
         obj = user_entry.objects.filter(file_id=file_id).filter(id__gte=random_id)[0]
         return JsonResponse({'user_id': obj.user_id, 'ip':obj.ip, 'port':obj.port, 'time':obj.time})
