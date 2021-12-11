@@ -3,6 +3,7 @@ from .models import user_entry
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 import pika
+import random
 
 @csrf_exempt
 def create(request):
@@ -33,7 +34,9 @@ def open(request):
     file_id = request.GET.get('file_id')
     print(file_id)
     try:
-        obj = user_entry.objects.filter(file_id=file_id).latest('time')
+        max_id = user_entry.objects.filter(file_id=file_id).order_by('-id')[0].id
+        random_id = random.randint(1, max_id + 1)
+        obj = user_entry.objects.filter(file_id=file_id).filter(id__gte=random_id)[0]
         return JsonResponse({'user_id': obj.user_id, 'ip':obj.ip, 'port':obj.port, 'time':obj.time})
 
     except ObjectDoesNotExist:
